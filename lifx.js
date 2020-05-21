@@ -185,13 +185,25 @@ Lifx.prototype._sendToOneOrAll = function(command, bulb) {
 				throw "Unknown bulb: " + bulb;
 			}
 		}
-		bulbAddress.copy(command, 8);
+		// bulbAddress.copy(command, 8);
 	}
 
 	_(this.gateways).each(function(gw, ip) {
 		var siteAddress = gw.site;
 		siteAddress.copy(command, 16);
-		self._sendPacket(gw.ip, gw.port, command);
+		// changes here thanks to JunSungHeeK 
+		// https://github.com/magicmonkey/lifxjs/issues/35
+		if (bulbAddress == null) {
+			self._sendPacket(gw.ip, gw.port, command);
+		}
+		else {
+			if (Buffer.isBuffer(bulbAddress)) {
+				bulbAddress = bulbAddress.toString("hex");
+			}
+			if (gw.bulbAddress == bulbAddress) {
+				self._sendPacket(gw.ip, gw.port, command);
+			}
+		}
 	});
 };
 
